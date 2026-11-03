@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="240" viewBox="0 0 900 240">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f2027">
+        <animate attributeName="stop-color" values="#0f2027;#1a1f4d;#0b3b3c;#0f2027" dur="10s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#2c5364">
+        <animate attributeName="stop-color" values="#2c5364;#3b1f5e;#1d6b4f;#2c5364" dur="10s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="line" x1="0" x2="1">
+      <stop offset="0%" stop-color="#2ea043" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#3fb950"/>
+      <stop offset="100%" stop-color="#58a6ff"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    .title { font: 800 44px 'Segoe UI', Arial, sans-serif; fill: #ffffff;
+             animation: slideIn 1.2s ease-out both; }
+    .sub   { font: 600 20px 'Courier New', monospace; fill: #7ee787; text-anchor: middle; opacity: 0; }
+    .s1 { animation: cycle 9s infinite 0s; }
+    .s2 { animation: cycle 9s infinite 3s; }
+    .s3 { animation: cycle 9s infinite 6s; }
+    .ecg { fill: none; stroke: url(#line); stroke-width: 3; stroke-linecap: round;
+           stroke-dasharray: 1100; stroke-dashoffset: 1100;
+           animation: draw 4s linear infinite; }
+    .tag { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #c9d1d9; text-anchor: middle;
+           animation: fade 2s ease-out both 0.8s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-20px);} to { opacity: 1; transform: translateY(0);} }
+    @keyframes fade { from { opacity: 0;} to { opacity: 1;} }
+    @keyframes draw { 0% { stroke-dashoffset: 1100; } 70% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+    @keyframes cycle { 0% {opacity:0;} 5% {opacity:1;} 30% {opacity:1;} 35% {opacity:0;} 100% {opacity:0;} }
+  </style>
+
+  <rect width="900" height="240" rx="14" fill="url(#bg)"/>
+
+  <text class="title" x="450" y="78" text-anchor="middle">Claims &amp; Denial Management</text>
+  <text class="tag" x="450" y="106">Healthcare Claims Tracking System with Advanced Database Analytics</text>
+
+  <path class="ecg" d="M40,165 L260,165 L290,165 L310,125 L330,200 L355,85 L380,165 L430,165 L455,145 L475,165 L860,165"/>
+
+  <text class="sub s1" x="450" y="218">Track Claims • Manage Denials</text>
+  <text class="sub s2" x="450" y="218">Assign Follow-up Tasks • Audit Every Change</text>
+  <text class="sub s3" x="450" y="218">Powered by Advanced Database Concepts</text>
+</svg>
