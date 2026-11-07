@@ -145,16 +145,16 @@ ROLE ──< USER ──< FOLLOW_UP_TASK >── CLAIM ──< DENIAL
 
 | # | Member Name | Student ID | Project Part |
 |:-:|:---|:-:|:---|
-| 1 | R.P.S. Tharuka | 37058 | |
-| 2 | S.D.L. Weerasinghe | 35560 | |
-| 3 | S.A.F. Fernandopulle | 36034 | |
-| 4 | A.U.N.A. Weerawansha | 36954 | |
-| 5 | G.Y. Lakshan Aroshana Yapa | 35357 | |
-| 6 | P.T.A. Jayasena | 37107 | |
-| 7 | P. Dinushka | 36599 | |
+| 1 | R.P.S. Tharuka | 37058 |PostgreSQL Database Lead ( DB Dev & Integration ) |
+| 2 | S.D.L. Weerasinghe | 35560 |Authentication , Authorization & User API s ( Backend) |
+| 3 | S.A.F. Fernandopulle | 36034 |Dashboard & Reporting Interface (Frontend) |
+| 4 | A.U.N.A. Weerawansha | 36954 |Denial & Follow Up interface (Frontend) |
+| 5 | G.Y. Lakshan Aroshana Yapa | 35357 |Claims & Claim History API s( Backend) |
+| 6 | P.T.A. Jayasena | 37107 |Claims Interface (Frontend) |
+| 7 | P. Dinushka | 36599 |Payments, Audit & Chatbot Interface (Frontend) |
 | 8 | A.P.S. Jeniton | 37499 |Authentication & User Interface (Frontend) |
-| 9 | T.I. Kottagoda | 35008 | |
-| 10 | A.M.S. Sharanga | 34651 | |
+| 9 | T.I. Kottagoda | 35008 |Denial , Followup , payment & Audit API ( Backend) |
+| 10 | A.M.S. Sharanga | 34651 |Dashboard , Analytics, Report & Chatbot Services ( Backend) |
 
 ---
 
