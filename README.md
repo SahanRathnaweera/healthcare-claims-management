@@ -152,7 +152,7 @@ ROLE ──< USER ──< FOLLOW_UP_TASK >── CLAIM ──< DENIAL
 | 5 | G.Y. Lakshan Aroshana Yapa | 35357 | |
 | 6 | P.T.A. Jayasena | 37107 | |
 | 7 | P. Dinushka | 36599 | |
-| 8 | A.P.S. Jeniton | 37499 | |
+| 8 | A.P.S. Jeniton | 37499 |Authentication & User Interface (Frontend) |
 | 9 | T.I. Kottagoda | 35008 | |
 | 10 | A.M.S. Sharanga | 34651 | |
 
@@ -174,16 +174,16 @@ ROLE ──< USER ──< FOLLOW_UP_TASK >── CLAIM ──< DENIAL
 
 ---
 
-## 🚧 Project Status
+## 🚧 Project Steps 
 
-- [x] Project proposal
-- [ ] Requirements analysis
-- [ ] ER diagram & schema
-- [ ] Database implementation
-- [ ] Backend APIs
-- [ ] Frontend
-- [ ] Testing & performance evaluation
-- [ ] Final demo
+-  Project proposal
+-  Requirements analysis
+-  ER diagram & schema
+-  Database implementation
+-  Backend APIs
+-  Frontend
+-  Testing & performance evaluation
+-  Final demo
 
 ---
 
