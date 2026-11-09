@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "Secret used to sign JSON Web Tokens."
+    },
+    {
+      "name": "app.jwt.expiration-ms",
+      "type": "java.lang.Long",
+      "description": "JWT expiration time in milliseconds."
+    },
+    {
+      "name": "app.jwt.remember-me-expiration-ms",
+      "type": "java.lang.Long",
+      "description": "Remember-me JWT expiration time in milliseconds."
+    },
+    {
+      "name": "app.audit.auth-events-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether authentication events are written to the audit log."
+    },
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Comma-separated list of allowed CORS origins."
+    }
+  ]
+}
