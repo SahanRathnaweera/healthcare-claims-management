@@ -1,0 +1,21 @@
+{
+  "info": {
+    "name": "Healthcare Claims Authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    { "name": "Login - valid", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": {"mode":"raw","raw":"{\"email\":\"admin@innobot.test\",\"password\":\"Dev@12345\"}"}, "url": "{{baseUrl}}/api/auth/login" } },
+    { "name": "Login - wrong password", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": {"mode":"raw","raw":"{\"email\":\"admin@innobot.test\",\"password\":\"Wrong@12345\"}"}, "url": "{{baseUrl}}/api/auth/login" } },
+    { "name": "Login - inactive", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": {"mode":"raw","raw":"{\"email\":\"pending@example.com\",\"password\":\"Dev@12345\"}"}, "url": "{{baseUrl}}/api/auth/login" } },
+    { "name": "Register - valid", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": {"mode":"raw","raw":"{\"fullName\":\"New Manager\",\"email\":\"new.manager@example.com\",\"password\":\"Dev@12345\",\"confirmPassword\":\"Dev@12345\"}"}, "url": "{{baseUrl}}/api/auth/register" } },
+    { "name": "Register - duplicate", "request": { "method":"POST", "header":[{"key":"Content-Type","value":"application/json"}], "body":{"mode":"raw","raw":"{\"fullName\":\"New Manager\",\"email\":\"admin@innobot.test\",\"password\":\"Dev@12345\",\"confirmPassword\":\"Dev@12345\"}"}, "url":"{{baseUrl}}/api/auth/register" } },
+    { "name": "Register - weak password", "request": { "method":"POST", "header":[{"key":"Content-Type","value":"application/json"}], "body":{"mode":"raw","raw":"{\"fullName\":\"New Manager\",\"email\":\"weak@example.com\",\"password\":\"password\",\"confirmPassword\":\"password\"}"}, "url":"{{baseUrl}}/api/auth/register" } },
+    { "name": "Logout", "request": { "method":"POST", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url":"{{baseUrl}}/api/auth/logout" } },
+    { "name": "Me - with token", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url":"{{baseUrl}}/api/auth/me" } },
+    { "name": "Me - without token", "request": { "method":"GET", "url":"{{baseUrl}}/api/auth/me" } }
+  ]
+}

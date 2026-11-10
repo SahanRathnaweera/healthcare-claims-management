@@ -52,3 +52,33 @@ SELECT * FROM v_monthly_claim_trend;
 
 -- TEST 12: Index usage (query plan)
 EXPLAIN ANALYZE SELECT * FROM claims WHERE current_status = 'DENIED';
+
+-- =====================================================
+-- Migration 001 tests (status transition validation)
+-- =====================================================
+
+-- TEST 13: Invalid transition (expect P0007)
+CALL update_claim_status(1, 'SUBMITTED', 2);
+
+-- TEST 14: User ID is NULL (expect P0002)
+CALL update_claim_status(6, 'PAID', NULL);
+
+-- TEST 15: Invalid user ID (expect P0003)
+CALL update_claim_status(6, 'PAID', 9999);
+
+-- TEST 16: Claim not found (expect P0005)
+CALL update_claim_status(999, 'PAID', 2);
+
+-- TEST 17: Invalid status value (expect P0004)
+CALL update_claim_status(6, 'DONE', 2);
+
+-- TEST 18: Valid transition PENDING -> PAID (expect success)
+CALL update_claim_status(6, 'PAID', 2);
+SELECT * FROM claim_status_history WHERE claim_id = 6 ORDER BY history_id;
+
+-- TEST 19: Allowed next statuses for a DENIED claim (expect APPEALED)
+SELECT * FROM get_allowed_next_statuses(3);
+
+-- TEST 20: changed_by NULL is blocked (expect SQLSTATE 23502)
+INSERT INTO claim_status_history (claim_id, previous_status, new_status, changed_by)
+VALUES (4, 'PENDING', 'PAID', NULL);
