@@ -1,4 +1,12 @@
 -- Review-only changes for authentication audit events and development users.
+-- Idempotent RBAC role seed; role_name is the canonical database-to-authority mapping.
+INSERT INTO roles (role_name) VALUES
+    ('System Administrator'),
+    ('Claims Processing Officer'),
+    ('Denial Management Officer'),
+    ('Manager/Analyst')
+ON CONFLICT (role_name) DO NOTHING;
+
 ALTER TABLE audit_logs DROP CONSTRAINT audit_logs_action_check;
 ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_action_check
     CHECK (action IN ('INSERT','UPDATE','DELETE','LOGIN','LOGOUT','LOGIN_FAILED'));

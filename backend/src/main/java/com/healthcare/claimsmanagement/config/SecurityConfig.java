@@ -8,21 +8,22 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.http.*;
-import jakarta.servlet.http.*;
-import java.io.IOException;
+import org.springframework.http.HttpMethod;
+import com.healthcare.claimsmanagement.security.AccessPolicy;
+import com.healthcare.claimsmanagement.security.SecurityErrorHandler;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
     private final com.healthcare.claimsmanagement.security.JwtAuthenticationFilter jwtFilter;
+    private final SecurityErrorHandler securityErrorHandler;
 
-    public SecurityConfig(com.healthcare.claimsmanagement.security.JwtAuthenticationFilter jwtFilter) {
+    public SecurityConfig(com.healthcare.claimsmanagement.security.JwtAuthenticationFilter jwtFilter,
+                          SecurityErrorHandler securityErrorHandler) {
         this.jwtFilter = jwtFilter;
+        this.securityErrorHandler = securityErrorHandler;
     }
 
     @Bean
@@ -32,12 +33,45 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/error").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/auth/me", "/api/auth/logout",
+                                "/api/chatbot/**").authenticated()
+                        .requestMatchers("/api/users/**", "/api/roles/**").hasAuthority(AccessPolicy.ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/claims/**", "/api/denials/**",
+                                "/api/follow-up-tasks/**", "/api/payments/**",
+                                "/api/dashboard/**").hasAnyAuthority(
+                                AccessPolicy.ADMIN, AccessPolicy.CLAIMS, AccessPolicy.DENIALS,
+                                AccessPolicy.MANAGER)
+                        .requestMatchers(HttpMethod.GET, "/api/audit-logs/**", "/api/reports/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.MANAGER)
+                        .requestMatchers(HttpMethod.POST, "/api/claims/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS)
+                        .requestMatchers(HttpMethod.PUT, "/api/claims/*/status")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS, AccessPolicy.DENIALS)
+                        .requestMatchers(HttpMethod.PUT, "/api/claims/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS)
+                        .requestMatchers(HttpMethod.PATCH, "/api/claims/*/status")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS, AccessPolicy.DENIALS)
+                        .requestMatchers(HttpMethod.PATCH, "/api/claims/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS)
+                        .requestMatchers(HttpMethod.POST, "/api/denials/**",
+                                "/api/follow-up-tasks/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.DENIALS)
+                        .requestMatchers(HttpMethod.PUT, "/api/denials/**",
+                                "/api/follow-up-tasks/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS, AccessPolicy.DENIALS)
+                        .requestMatchers(HttpMethod.PATCH, "/api/denials/**",
+                                "/api/follow-up-tasks/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS, AccessPolicy.DENIALS)
+                        .requestMatchers(HttpMethod.POST, "/api/payments/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS)
+                        .requestMatchers(HttpMethod.PUT, "/api/payments/**")
+                        .hasAnyAuthority(AccessPolicy.ADMIN, AccessPolicy.CLAIMS)
+                        .anyRequest().denyAll())
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(jsonError(HttpStatus.UNAUTHORIZED, "Authentication required"))
-                        .accessDeniedHandler(jsonDenied(HttpStatus.FORBIDDEN, "Access denied")))
+                        .authenticationEntryPoint(securityErrorHandler)
+                        .accessDeniedHandler(securityErrorHandler))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -47,19 +81,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    private static AuthenticationEntryPoint jsonError(HttpStatus status, String message) {
-        return (request, response, ex) -> writeError(response, status, message);
-    }
-
-    private static AccessDeniedHandler jsonDenied(HttpStatus status, String message) {
-        return (request, response, ex) -> writeError(response, status, message);
-    }
-
-    private static void writeError(HttpServletResponse response, HttpStatus status, String message)
-            throws IOException {
-        response.setStatus(status.value());
-        response.setContentType("application/json");
-        response.getWriter().write("{\"status\":" + status.value() + ",\"error\":\""
-                + status.getReasonPhrase() + "\",\"message\":\"" + message + "\"}");
-    }
 }
