@@ -7,11 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Map;
@@ -22,7 +25,7 @@ public class GlobalExceptionHandler {
 
     private static final Logger log =
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
- 
+
     // 400 - VALIDATION ERRORS
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiError> validation(
@@ -45,7 +48,7 @@ public class GlobalExceptionHandler {
                 fields
         );
     }
- 
+
     // 401 - AUTHENTICATION ERRORS
     @ExceptionHandler(AuthenticationException.class)
     ResponseEntity<ApiError> unauthorized(
@@ -59,7 +62,7 @@ public class GlobalExceptionHandler {
                 null
         );
     }
- 
+
     // 403 - INACTIVE ACCOUNT
     @ExceptionHandler(InactiveAccountException.class)
     ResponseEntity<ApiError> inactive(
@@ -73,7 +76,7 @@ public class GlobalExceptionHandler {
                 null
         );
     }
- 
+
     // 409 - DUPLICATE EMAIL
     @ExceptionHandler(DuplicateEmailException.class)
     ResponseEntity<ApiError> conflict(
@@ -87,7 +90,7 @@ public class GlobalExceptionHandler {
                 null
         );
     }
- 
+
     // 400 - PASSWORD MISMATCH
     @ExceptionHandler(PasswordMismatchException.class)
     ResponseEntity<ApiError> mismatch(
@@ -101,14 +104,41 @@ public class GlobalExceptionHandler {
                 null
         );
     }
- 
+
+    // HANDLE RESPONSE STATUS EXCEPTIONS
+    // Preserves intended HTTP status: 400, 401, 403, 404, 409, etc.
+    @ExceptionHandler(ResponseStatusException.class)
+    ResponseEntity<ApiError> statusException(
+            ResponseStatusException ex,
+            HttpServletRequest request) {
+
+        HttpStatusCode status = ex.getStatusCode();
+
+        String message = ex.getReason() == null
+                ? "Request failed"
+                : ex.getReason();
+
+        log.warn(
+                "Request rejected: {} {} - HTTP {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                status.value()
+        );
+
+        return response(
+                status,
+                message,
+                request,
+                null
+        );
+    }
+
     // 500 - UNEXPECTED SERVER ERRORS
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiError> unexpected(
             Exception ex,
             HttpServletRequest request) {
 
-        // Log the full exception for backend debugging.
         log.error(
                 "Unexpected error while processing {} {}",
                 request.getMethod(),
@@ -116,7 +146,6 @@ public class GlobalExceptionHandler {
                 ex
         );
 
-        // Do not expose internal exception details to API users.
         return response(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred",
@@ -124,20 +153,25 @@ public class GlobalExceptionHandler {
                 null
         );
     }
- 
-    // STANDARD API ERROR RESPONSE
-     
 
+    // STANDARD API ERROR RESPONSE
     private ResponseEntity<ApiError> response(
-            HttpStatus status,
+            HttpStatusCode status,
             String message,
             HttpServletRequest request,
             Map<String, String> fields) {
 
-        ApiError error = new ApiError(
+        HttpStatus resolvedStatus =
+                HttpStatus.resolve(status.value());
+
+        String error = resolvedStatus == null
+                ? "HTTP Error"
+                : resolvedStatus.getReasonPhrase();
+
+        ApiError apiError = new ApiError(
                 Instant.now(),
                 status.value(),
-                status.getReasonPhrase(),
+                error,
                 message,
                 request.getRequestURI(),
                 fields
@@ -145,10 +179,10 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(status)
-                .body(error);
+                .body(apiError);
     }
- 
-    // API ERROR RESPONSE DTO    
+
+    // API ERROR RESPONSE DTO
     public record ApiError(
             Instant timestamp,
             int status,
