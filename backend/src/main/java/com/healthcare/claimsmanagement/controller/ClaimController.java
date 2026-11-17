@@ -7,9 +7,14 @@ import com.healthcare.claimsmanagement.dto.ClaimResponse;
 import com.healthcare.claimsmanagement.dto.ClaimStatus;
 import com.healthcare.claimsmanagement.dto.ClaimStatusUpdateRequest;
 import com.healthcare.claimsmanagement.dto.ClaimUpdateRequest;
+
 import com.healthcare.claimsmanagement.service.ClaimService;
+import com.healthcare.claimsmanagement.service.AuthenticatedActorResolver;
 
 import jakarta.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,20 +23,28 @@ import org.springframework.data.web.PageableDefault;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api/v1/claims")
 public class ClaimController {
 
-    private final ClaimService service;
+    private static final Logger log =
+            LoggerFactory.getLogger(ClaimController.class);
 
-    public ClaimController(ClaimService service) {
+    private final ClaimService service;
+    private final AuthenticatedActorResolver actorResolver;
+
+    public ClaimController(
+            ClaimService service,
+            AuthenticatedActorResolver actorResolver) {
+
         this.service = service;
+        this.actorResolver = actorResolver;
     }
 
     // Create a new claim
@@ -93,23 +106,26 @@ public class ClaimController {
         return service.getHistory(id);
     }
 
-    // Change claim status
-    // Development only: replace header with authenticated user identity.
-    // Must remain disabled in shared/deployed environments
-    // until authentication and transition validation are integrated.
+    // Change claim status using authenticated JWT user identity
     @PatchMapping("/{id}/status")
     public ClaimResponse status(
             @PathVariable Integer id,
             @Valid @RequestBody ClaimStatusUpdateRequest request,
-            @RequestHeader(
-                    value = "X-Dev-User-Id",
-                    required = false
-            ) Integer devActorId) {
+            Authentication authentication) {
+
+        Integer actorId =
+                actorResolver.resolveUserId(authentication);
+
+        log.info(
+                "Claim status update requested: claimId={}, actorId={}",
+                id,
+                actorId
+        );
 
         return service.changeStatus(
                 id,
                 request,
-                devActorId
+                actorId
         );
     }
 }
