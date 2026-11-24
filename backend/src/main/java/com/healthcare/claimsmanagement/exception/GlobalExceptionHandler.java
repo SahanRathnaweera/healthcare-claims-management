@@ -10,9 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import jakarta.validation.ConstraintViolationException;
 
 import org.springframework.web.server.ResponseStatusException;
 
@@ -47,6 +53,57 @@ public class GlobalExceptionHandler {
                 request,
                 fields
         );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<ApiError> constraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        Map<String, String> fields = ex.getConstraintViolations().stream()
+                .collect(Collectors.toMap(
+                        violation -> {
+                            String path = violation.getPropertyPath().toString();
+                            int dot = path.lastIndexOf('.');
+                            return dot >= 0 ? path.substring(dot + 1) : path;
+                        },
+                        violation -> violation.getMessage(),
+                        (first, ignored) -> first
+                ));
+
+        return response(HttpStatus.BAD_REQUEST, "Validation failed", request, fields);
+    }
+
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class
+    })
+    ResponseEntity<ApiError> malformedRequest(
+            Exception ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "Invalid request", request, null);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ResponseEntity<ApiError> dataIntegrity(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "The request conflicts with existing data", request, null);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<ApiError> accessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.FORBIDDEN, "Access denied", request, null);
+    }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    ResponseEntity<ApiError> springUnauthorized(
+            org.springframework.security.core.AuthenticationException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.UNAUTHORIZED, "Authentication required", request, null);
     }
 
     // 401 - AUTHENTICATION ERRORS
