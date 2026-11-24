@@ -38,7 +38,7 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         String email = normalize(request.email());
-        User user = users.findByEmail(email).orElse(null);
+        User user = users.findByEmailIgnoreCase(email).orElse(null);
         if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             log.warn("Failed login for unknown or invalid credentials");
             if (user != null) audit.auth(user.getUserId(), "LOGIN_FAILED");
@@ -59,7 +59,7 @@ public class AuthService {
             throw new PasswordMismatchException("Password and confirmPassword must match");
         }
         String email = normalize(request.email());
-        if (users.existsByEmail(email)) throw new DuplicateEmailException("Email is already registered");
+        if (users.existsByEmailIgnoreCase(email)) throw new DuplicateEmailException("Email is already registered");
         var role = roles.findByRoleName(RoleName.MANAGER_ANALYST.databaseName())
                 .orElseThrow(() -> new IllegalStateException("Default registration role is not configured"));
         User user = new User(request.fullName().trim(), email,
@@ -74,7 +74,7 @@ public class AuthService {
     /** Returns the profile associated with the authenticated principal. */
     @Transactional(readOnly = true)
     public UserProfile me(String email) {
-        return users.findByEmail(normalize(email)).map(this::profile)
+        return users.findByEmailIgnoreCase(normalize(email)).map(this::profile)
                 .orElseThrow(() -> new AuthenticationException(INVALID_CREDENTIALS));
     }
 
@@ -82,7 +82,7 @@ public class AuthService {
     public void logout(String token) {
         var claims = jwtService.extractClaims(token);
         blacklist.add(claims.getId(), claims.getExpiration().toInstant());
-        User user = users.findByEmail(normalize(claims.getSubject())).orElse(null);
+        User user = users.findByEmailIgnoreCase(normalize(claims.getSubject())).orElse(null);
         if (user != null) audit.auth(user.getUserId(), "LOGOUT");
     }
 

@@ -31,7 +31,7 @@ public class AuthenticatedActorResolver {
 
         String email = authentication.getName();
 
-        User user = users.findByEmail(email)
+        User user = users.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
                         "Authenticated user not found"));

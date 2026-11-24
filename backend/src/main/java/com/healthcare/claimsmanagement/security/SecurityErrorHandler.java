@@ -45,16 +45,24 @@ public class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDen
                        HttpStatus status, String message) throws IOException {
         response.setStatus(status.value());
         response.setContentType("application/json");
-        Map<String, String> body = new LinkedHashMap<>();
+        Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", Instant.now().toString());
+        body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
         body.put("path", request.getRequestURI());
-        String fields = body.entrySet().stream()
-                .map(entry -> "\"" + escape(entry.getKey()) + "\":\"" + escape(entry.getValue()) + "\"")
+        body.put("fieldErrors", null);
+        String json = body.entrySet().stream()
+                .map(entry -> {
+                    if (entry.getValue() == null) {
+                        return "\"" + escape(entry.getKey()) + "\":null";
+                    }
+                    if (entry.getValue() instanceof Integer) {
+                        return "\"" + escape(entry.getKey()) + "\":" + entry.getValue();
+                    }
+                    return "\"" + escape(entry.getKey()) + "\":\"" + escape(entry.getValue().toString()) + "\"";
+                })
                 .collect(java.util.stream.Collectors.joining(",", "{", "}"));
-        String json = fields.substring(0, fields.length() - 1)
-                + ",\"status\":" + status.value() + "}";
         response.getWriter().write(json);
     }
 

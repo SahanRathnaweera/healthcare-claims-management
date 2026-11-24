@@ -26,7 +26,7 @@ public class AuditService {
 
     public void denied(String email, String method, String path) {
         try {
-            Integer userId = users.findByEmail(email.toLowerCase(java.util.Locale.ROOT))
+            Integer userId = users.findByEmailIgnoreCase(email.toLowerCase(java.util.Locale.ROOT))
                     .map(entity -> entity.getUserId())
                     .orElse(null);
             log.warn("Denied access userId={} method={} path={}", userId, method, path);
