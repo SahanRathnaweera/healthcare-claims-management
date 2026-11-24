@@ -18,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = users.findByEmailIgnoreCase(email.toLowerCase())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
         return new AuthenticatedUser(user.getUserId(), user.getEmail(), user.getPasswordHash(),
                 user.isActive(),
                 java.util.List.of(new SimpleGrantedAuthority(

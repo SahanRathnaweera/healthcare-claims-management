@@ -44,7 +44,10 @@ public class AuthService {
             if (user != null) audit.auth(user.getUserId(), "LOGIN_FAILED");
             throw new AuthenticationException(INVALID_CREDENTIALS);
         }
-        if (!user.isActive()) throw new InactiveAccountException("Account is inactive or pending approval");
+        if (!user.isActive()) {
+            audit.auth(user.getUserId(), "LOGIN_FAILED");
+            throw new AuthenticationException(INVALID_CREDENTIALS);
+        }
         long expiry = Boolean.TRUE.equals(request.rememberMe()) ? rememberExpirationMs : expirationMs;
         String token = jwtService.generateToken(user, expiry);
         audit.auth(user.getUserId(), "LOGIN");
