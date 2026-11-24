@@ -91,6 +91,27 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    ResponseEntity<ApiError> duplicateResource(
+            DuplicateResourceException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    ResponseEntity<ApiError> notFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    ResponseEntity<ApiError> badRequest(
+            BadRequestException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
     // 400 - PASSWORD MISMATCH
     @ExceptionHandler(PasswordMismatchException.class)
     ResponseEntity<ApiError> mismatch(
